@@ -1,0 +1,13 @@
+# macOS
+.DS_Store
+
+# VSCode
+.vscode/
+
+# Composer
+/vendor/
+composer.lock
+
+# Logs
+*.log
+
