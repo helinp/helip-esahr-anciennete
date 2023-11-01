@@ -11,3 +11,4 @@ composer.lock
 # Logs
 *.log
 
+.phpunit.result.cache

@@ -4,5 +4,11 @@ namespace Helip\EsahrAnciennete;
 
 interface AncienneteCalculateurInterface
 {
-    public function calculer(array $evenements, ?AncienneteInterface $anciennete = null): AncienneteInterface;
+    /**
+     * Calcule l'ancienneté d'un enseignant
+     * 
+     * @param Evenement[] $evenements
+     * @return AncienneteInterface
+     */
+    public function calculer(array $evenements): AncienneteInterface;
 }

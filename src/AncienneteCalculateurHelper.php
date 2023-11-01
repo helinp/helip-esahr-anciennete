@@ -48,8 +48,8 @@ class AncienneteCalculateurHelper
     /**
      * Retourne un array d'attributions groupées par fonction
      * 
-     * @param Attribution[] $attribution
-     * @return array
+     * @param Attribution[] $attributions
+     * @return Attribution[]
      */
     public static function groupeParFonction(array $attributions): array
     {
@@ -59,19 +59,27 @@ class AncienneteCalculateurHelper
     /**
      * Retourne un array d'attributions groupées par catégorie
      * 
-     * @param Attribution[] $attribution
-     * @return array
+     * @param Attribution[] $attributions
+     * @return Attribution[]
      */
-    public static function groupeParCategorieEtPo(array $attributions)
+    public static function groupeParCategorieEtPo(array $attributions): array
     {
         return self::groupeParPropriete($attributions, 'getCategorie');
     }
 
-    private static function groupeParPropriete(array $items, string $propriete): array
+    /**
+     * Retourne un array d'attributions groupées par propriété
+     * 
+     * @param mixed[] $attributions
+     * @param Attribution[] $attributions
+     * 
+     * @return mixed[]
+     */
+    private static function groupeParPropriete(array $attributions, string $propriete): array
     {
         $groupes = [];
 
-        foreach ($items as $item) {
+        foreach ($attributions as $item) {
 
             $key = $item->$propriete() . (string) $item->getEstPo();
             if (!array_key_exists($key, $groupes)) {
@@ -119,5 +127,38 @@ class AncienneteCalculateurHelper
         });
 
         return $attributions;
+    }
+
+    /**
+     * Calcule les jours d'ancienneté avec le coefficient
+     * .3 (30%) pour les 1200 premiers jours PO
+     *
+     * @param float $jours le nombre de jours à calculer
+     * @param float $anciennetePo l'anncienneté PO brute
+     * @return float le nombre de jours avec le coefficient appliqué
+     */
+    public static function calculerJoursPo(float $jours, float $anciennetePo): float
+    {
+        // négatif 
+        if($anciennetePo < 0 || $jours < 0) {
+            throw new \InvalidArgumentException('L\'ancienneté PO ne peut pas être négative.');
+        }
+
+        if($jours == 0) {
+            return 0;
+        }
+
+        $seuilJours = 1200;
+        $coefficientReducteur = .3;
+
+        if ($anciennetePo >= $seuilJours) {
+            return $jours;
+        }
+        
+        $nbJoursAvant1200 = min($seuilJours - $anciennetePo, $jours);
+        $nbJoursApres1200 = max($jours - $nbJoursAvant1200, 0);
+
+        // En dessous de 1200 jours, on applique la règle des 30%
+        return ($nbJoursAvant1200 * $coefficientReducteur) + $nbJoursApres1200;
     }
 }

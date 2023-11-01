@@ -70,9 +70,9 @@ class AncienneteServiceTest extends TestCase
 
         $anciennete = $ancienneteService->calculer([$evenenement]);
 
-        // Ancienneté de la catégorie (service)
-        $this->assertEquals(92, $anciennete->get(Attribution::CAT_PERSONNEL_EDUCATIF, 'CF'), 'Ancienneté de la catégorie (service)');
-        $this->assertEquals(92, $anciennete->get(Attribution::CAT_PERSONNEL_EDUCATIF, 'TOTAL'), 'Ancienneté de la catégorie (service)');
+        // Ancienneté de la catégorie
+        $this->assertEquals(92, $anciennete->get(Attribution::CAT_PERSONNEL_EDUCATIF, 'CF'), 'Ancienneté de la catégorie');
+        $this->assertEquals(92, $anciennete->get(Attribution::CAT_PERSONNEL_EDUCATIF, 'TOTAL'), 'Ancienneté de la catégorie');
     }
 
     /**
@@ -127,8 +127,8 @@ class AncienneteServiceTest extends TestCase
 
         $anciennete = $ancienneteService->calculer([$evenenement]);
 
-        // Ancienneté de la catégorie (service)
-        $this->assertEquals(46, $anciennete->get(Attribution::CAT_PERSONNEL_EDUCATIF), 'Ancienneté de la catégorie (service)');
+        // Ancienneté de la catégorie
+        $this->assertEquals(46, $anciennete->get(Attribution::CAT_PERSONNEL_EDUCATIF), 'Ancienneté de la catégorie');
     }
 
     /**
@@ -201,10 +201,10 @@ class AncienneteServiceTest extends TestCase
 
         $anciennete = $ancienneteService->calculer([$evenenementA, $evenenementB, $evenenementC]);
 
-        // Ancienneté de la catégorie (service)
+        // Ancienneté de la catégorie
         /* Son ancienneté au 30 juin 2021 sera de 84 jours (45,5 + 2,5 + 36,5 = 84,5) */
 
-        $this->assertEquals(84, $anciennete->get(Attribution::CAT_PERSONNEL_EDUCATIF), 'Ancienneté de la catégorie (service)');
+        $this->assertEquals(84, $anciennete->get(Attribution::CAT_PERSONNEL_EDUCATIF), 'Ancienneté de la catégorie');
     }
 
     /**
@@ -214,7 +214,9 @@ class AncienneteServiceTest extends TestCase
     public function testPoEtCf1Evenement()
     {
         /*
-        Par exemple, un professeur de formation instrumentale, spécialité guitare et guitare d’accompagnement, preste 6 périodes subventionnées et 12 périodes à charge des fonds communaux durant une année scolaire complète. Son ancienneté statutaire se calcule comme suit :
+        Par exemple, un professeur de formation instrumentale, spécialité guitare et guitare d’accompagnement, 
+        preste 6 périodes subventionnées et 12 périodes à charge des fonds communaux durant une année scolaire complète. 
+        Son ancienneté statutaire se calcule comme suit :
         o Pour les services subventionnés : 300 jours /2 = 150 jours (6p < 1⁄2 temps)
         o Pour les services financés par la commune : 300 jours x 0,3 = 90 jours (12p = 1⁄2
         temps)
@@ -254,8 +256,8 @@ class AncienneteServiceTest extends TestCase
 
         $anciennete = $ancienneteService->calculer([$evenenement]);
 
-        $this->assertEquals(150, $anciennete->get(Attribution::CAT_PERSONNEL_EDUCATIF, 'CF'), 'Ancienneté de la catégorie (service)');
-        $this->assertEquals(90, $anciennete->get(Attribution::CAT_PERSONNEL_EDUCATIF, 'PO'), 'Ancienneté de la catégorie (service)');
+        $this->assertEquals(150, $anciennete->get(Attribution::CAT_PERSONNEL_EDUCATIF, 'CF'), 'Ancienneté de la catégorie CF');
+        $this->assertEquals(90, $anciennete->get(Attribution::CAT_PERSONNEL_EDUCATIF, 'PO'), 'Ancienneté de la catégorie PO');
     }
 
     /**
@@ -265,7 +267,9 @@ class AncienneteServiceTest extends TestCase
     public function testPoEtCf1Evenement300Jours()
     {
         /*
-Par exemple, un professeur de formation instrumentale, spécialité guitare et guitare d’accompagnement preste 12 périodes subventionnées et 6 périodes à charge des fonds communaux durant une année scolaire complète. Son ancienneté statutaire se calcule comme suit :
+Par exemple, un professeur de formation instrumentale, spécialité guitare et guitare d’accompagnement 
+preste 12 périodes subventionnées et 6 périodes à charge des fonds communaux durant une année scolaire complète. 
+Son ancienneté statutaire se calcule comme suit :
 o Pour les services subventionnés : 300 jours (12p = 1⁄2 temps)
 o Pour les services financés par la commune : (300 jours/2) x 0,3 = 45 jours (6p < 1⁄2
 temps)
@@ -307,9 +311,9 @@ o Totalpourl’annéescolaire:300jourspuisqu’uneannéescolairenepeutdépasser
 
         $anciennete = $ancienneteService->calculer([$evenenement]);
 
-        $this->assertEquals(300, $anciennete->get(Attribution::CAT_PERSONNEL_EDUCATIF, 'CF'), 'Ancienneté de la catégorie (service)');
-        $this->assertEquals(45, $anciennete->get(Attribution::CAT_PERSONNEL_EDUCATIF, 'PO'), 'Ancienneté de la catégorie (service)');
-        $this->assertEquals(300, $anciennete->get(Attribution::CAT_PERSONNEL_EDUCATIF), 'Ancienneté de la catégorie (service)');
+        $this->assertEquals(300, $anciennete->get(Attribution::CAT_PERSONNEL_EDUCATIF, 'CF'), 'Ancienneté CF');
+        $this->assertEquals(45, $anciennete->get(Attribution::CAT_PERSONNEL_EDUCATIF, 'PO'), 'Ancienneté PO');
+        $this->assertEquals(300, $anciennete->get(Attribution::CAT_PERSONNEL_EDUCATIF), 'Ancienneté TOTALE');
     }
 
     private function testPage19()
@@ -404,7 +408,7 @@ d’ancienneté puisque le membre du personnel a déjà un mi-temps subventionn�
     public function testPage19Cf()
     {
         $anciennete = $this->testPage19();
-        $this->assertEquals(226, $anciennete->get(Attribution::CAT_PERSONNEL_EDUCATIF, 'CF'), 'Ancienneté de la catégorie (service)');
+        $this->assertEquals(226, $anciennete->get(Attribution::CAT_PERSONNEL_EDUCATIF, 'CF'), 'Ancienneté CF');
     }
 
     /**
@@ -415,7 +419,7 @@ d’ancienneté puisque le membre du personnel a déjà un mi-temps subventionn�
     {
         $anciennete = $this->testPage19();
 
-        $this->assertEquals(45, $anciennete->get(Attribution::CAT_PERSONNEL_EDUCATIF, 'PO'), 'Ancienneté de la catégorie (service)');
+        $this->assertEquals(45, $anciennete->get(Attribution::CAT_PERSONNEL_EDUCATIF, 'PO'), 'Ancienneté PO');
     }
 
     /**
@@ -425,7 +429,7 @@ d’ancienneté puisque le membre du personnel a déjà un mi-temps subventionn�
     public function testPage19Total()
     {
         $anciennete = $this->testPage19();
-        $this->assertEquals(248, $anciennete->get(Attribution::CAT_PERSONNEL_EDUCATIF), 'Ancienneté de la catégorie (service)');
+        $this->assertEquals(248, $anciennete->get(Attribution::CAT_PERSONNEL_EDUCATIF), 'Ancienneté totale');
     }
 
     /**
@@ -459,13 +463,14 @@ d’ancienneté puisque le membre du personnel a déjà un mi-temps subventionn�
             dateDebut: new DateTime('2021-09-01'),
             dateFin: new DateTime('2022-06-30'),
             attributions: [$attributionA],
-            ancienneteActuellePO: 1100
+            ancienneteActuellePOEducatif: 1100,
+            ancienneteActuellePOAuxiliaire: 0
         );
 
         $ancienneteService = new AncienneteServiceCalculateur();
         $anciennete = $ancienneteService->calculer([$evenenement]);
 
-        $this->assertEquals(230, $anciennete->get(Attribution::CAT_PERSONNEL_EDUCATIF, 'PO'), 'Ancienneté de la catégorie (service)');
+        $this->assertEquals(230, $anciennete->get(Attribution::CAT_PERSONNEL_EDUCATIF, 'PO'), 'Ancienneté PO');
     }
 
     // test anciennete 1200 se fait sur plusieurs événements
@@ -487,42 +492,84 @@ d’ancienneté puisque le membre du personnel a déjà un mi-temps subventionn�
 
         $evenenementA = new Evenement(
             dateDebut: new DateTime('2021-09-01'),
-            dateFin: new DateTime('2021-12-31'),
+            dateFin: new DateTime('2021-12-19'),
             attributions: [$attributionA],
-            ancienneteActuellePO: 1100
+            ancienneteActuellePOEducatif: 1100
         );
 
-        /* 122 jours =
-            100 * .3 = 30
-            + 22 = 52 jours
+        /* 
+        110 jours bruts deviennent
+        100 * 0.3 = 30 jours (1200 - 1100)
+        + 10 jours = 40 jours
         */
-
         $ancienneteService = new AncienneteServiceCalculateur();
         $anciennete = $ancienneteService->calculer([$evenenementA]);
-        $this->assertEquals(52, $anciennete->get(Attribution::CAT_PERSONNEL_EDUCATIF, 'PO'), 'Ancienneté de la catégorie (service)');
+        $this->assertEquals(40, $anciennete->get(Attribution::CAT_PERSONNEL_EDUCATIF, 'PO'), 'Ancienneté PO Evenement A');
+        $this->assertEquals(110, $anciennete->get(Attribution::CAT_PERSONNEL_EDUCATIF, 'PO_RAW'), 'Ancienneté jours bruts PO');
 
         $evenenementB = new Evenement(
-            dateDebut: new DateTime('2022-01-01'),
+            dateDebut: new DateTime('2021-12-20'),
             dateFin: new DateTime('2022-06-30'),
             attributions: [$attributionA],
-            ancienneteActuellePO: (1100 + $anciennete->get(Attribution::CAT_PERSONNEL_EDUCATIF, 'PO'))
-        );
-        
-        /* 181 jours */
-        $ancienneteB = $ancienneteService->calculer([$evenenementB]);
-      //  $this->assertEquals(181, $ancienneteB->get(Attribution::CAT_PERSONNEL_EDUCATIF, 'PO'), 'Ancienneté de la catégorie (service)');
-        
-        $evenenementB = new Evenement(
-        dateDebut: new DateTime('2022-01-01'),
-            dateFin: new DateTime('2022-06-30'),
-            attributions: [$attributionA],
-            ancienneteActuellePO: 1100
+            ancienneteActuellePOEducatif: (1100 + $anciennete->get(Attribution::CAT_PERSONNEL_EDUCATIF, 'PO_RAW'))
         );
 
-        // Toute l'année
+        /* 
+        193 jours calendriers
+        Ancienneté = 1100 + 110 jours
+        */
+        $anciennete = $ancienneteService->calculer([$evenenementB]);
+        $this->assertEquals(193, $anciennete->get(Attribution::CAT_PERSONNEL_EDUCATIF, 'PO'), 'Ancienneté PO Ev. B');
+    }
+
+    // test anciennete 1200 se fait sur plusieurs événements
+    public function testPoPlus1200JoursSommeEvents()
+    {
+        /* Exemple d'un professeur de mandoline qui preste 13 périodes PO et a une ancienneté de 1100 jours PO */
+
+        // 110 jours calendriers
+        $attributionA = new Attribution(
+            fraction: 24,
+            periodes: 13,
+            situation: 'T',
+            fonction: 'Mandoline',
+            categorie: Attribution::CAT_PERSONNEL_EDUCATIF,
+            anneeScolaire: new AnneeScolaire('2021-2022'),
+            estSubventionne: true,
+            estPO: true,
+            estTitreRequis: true
+        );
+
+        $evenenementA = new Evenement(
+            dateDebut: new DateTime('2021-09-01'),
+            dateFin: new DateTime('2021-12-19'),
+            attributions: [$attributionA],
+            ancienneteActuellePOEducatif: 1100
+        );
+
+        /* 
+        110 jours bruts deviennent
+        100 * 0.3 = 30 jours (1200 - 1100)
+        + 10 jours = 40 jours
+        */
+        $ancienneteService = new AncienneteServiceCalculateur();
+
+        // 193 jours calendriers
+        $evenenementB = new Evenement(
+            dateDebut: new DateTime('2021-12-20'),
+            dateFin: new DateTime('2022-06-30'),
+            attributions: [$attributionA],
+            ancienneteActuellePOEducatif: 1100
+        );
+
+        /* 
+        193 jours calendriers
+        Ancienneté = 1100 + 110 jours
+        */
         $anciennete = $ancienneteService->calculer([$evenenementA, $evenenementB]);
-        $this->assertEquals(230, $anciennete->get(Attribution::CAT_PERSONNEL_EDUCATIF, 'PO'), 'Ancienneté de la catégorie (service)');
-
-
+        $this->assertEquals(300, $anciennete->get(Attribution::CAT_PERSONNEL_EDUCATIF, 'PO_RAW'), 'Ancienneté PO Raw');
+        $this->assertEquals(230, $anciennete->get(Attribution::CAT_PERSONNEL_EDUCATIF, 'PO'), 'Ancienneté PO Evenement A + B');
     }
 }
+
+

@@ -7,66 +7,62 @@ class AncienneteServiceCalculateur implements AncienneteCalculateurInterface
     /**
      * Calcule l'ancienneté d'un enseignant
      * 
-     * @param array $evenements
-     * @param AncienneteInterface|null $anciennete Ancienneté déjà calculée, utile pour les 1200 jours PO
+     * @param Evenement[] $evenements
      * @return AncienneteService
      */
-    public function calculer(array $evenements, ?AncienneteInterface $anciennete = null): AncienneteService
+    public function calculer(array $evenements): AncienneteService
     {
-        if ($anciennete === null) {
-            $anciennete = new AncienneteService();
-        } elseif (!($anciennete instanceof AncienneteService)) {
-            throw new \InvalidArgumentException("Le paramètre fourni doit être une instance de AncienneteService.");
-        }
+        $anciennete = new AncienneteService();
 
         // trier les événements par date de début
         $evenements = AncienneteCalculateurHelper::trierEvenementsParDateDebut($evenements);
 
         foreach ($evenements as $evenement) {
-            $anciennete->resetChargeDecimal(); // évite d'additionner les charges sur plusieurs evenements
-            $this->calculerAnciennetePourEvenement($evenement, $anciennete);
+          $this->calculerAnciennetePourEvenement($evenement, $anciennete);
         }
 
         return $anciennete;
     }
 
 
-    private function calculerAnciennetePourEvenement(Evenement $evenement, AncienneteService $anciennete)
+    /**
+     * Met à jour l'objet AncienneteService 
+     * avec le calcul de l'ancienneté pour un événement
+     * 
+     * @param Evenement $evenement
+     * @param AncienneteService $anciennete
+     */
+    private function calculerAnciennetePourEvenement(Evenement $evenement, AncienneteService $anciennete): void
     {
-        // groupe par catégorie
-        $attributions = AncienneteCalculateurHelper::groupeParCategorieEtPo($evenement->getAttributions());
-
         // Calcule le nombre de jours calendrier
-        $nbJoursCalendrier = AncienneteCalculateurHelper::getNombreJoursCalendrier(
+        $joursCalendrier = AncienneteCalculateurHelper::getNombreJoursCalendrier(
             $evenement->getDateDebut(),
             $evenement->getDateFin()
         );
 
-        // Boucle sur les attributions
-        foreach ($attributions as $attribution) {
+        $anciennete->resetCalculVariables();
+        $anciennete->setAncienneteBrutePo($evenement->getAncienneteActuellePOEducatif(), Attribution::CAT_PERSONNEL_EDUCATIF);
+        $anciennete->setAncienneteBrutePo($evenement->getAncienneteActuellePOAuxiliaire(), Attribution::CAT_PERSONNEL_AUXILIAIRE);
+        
+        $anciennete->setJoursCalendrier($joursCalendrier);
 
-            // Si pas subventionnée, on passe
+        foreach ($evenement->getAttributions() as $attribution) {
+
             if (!$attribution->getEstSubventionne()) {
                 continue;
             }
 
-            // si aucune période, on passe
             if ($attribution->getPeriodes() == 0) {
-                continue;
-            } 
-
-            // si PO et pas titre requis, on passe
-            if ($attribution->getEstPO() && !$attribution->getEstTitreRequis()) {
                 continue;
             }
 
             $anciennete->add(
-                $nbJoursCalendrier,
                 $attribution->getCategorie(),
                 $attribution->getChargeDecimal(),
-                $attribution->getEstPO(),
-                $evenement->getAncienneteActuellePO()
+                $attribution->getEstPO()
             );
         }
+        // TODO catégorie pour ancienneté po
+        $anciennete->calculerAnciennetes();
     }
 }

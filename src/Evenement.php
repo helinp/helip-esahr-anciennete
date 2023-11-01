@@ -14,7 +14,12 @@ class Evenement
 {
     private DateTime $dateDebut;
     private DateTime $dateFin;
-    private int $ancienneteActuellePO;
+    private int $ancienneteActuellePOEducatif;
+    private int $ancienneteActuellePOAuxiliaire;
+
+    /**
+     * @var Attribution[]
+     */
     private array $attributions = [];
 
     /**
@@ -27,7 +32,8 @@ class Evenement
         DateTime $dateDebut,
         DateTime $dateFin,
         array $attributions,
-        int $ancienneteActuellePO = 0
+        int $ancienneteActuellePOEducatif = 0,
+        int $ancienneteActuellePOAuxiliaire = 0
     ) {
         if ($dateDebut > $dateFin && $dateFin !== null) {
             throw new InvalidArgumentException('La date de début doit être inférieure à la date de fin.');
@@ -43,7 +49,8 @@ class Evenement
         $this->dateDebut = $dateDebut;
         $this->dateFin = $dateFin;
         $this->attributions = $attributions;
-        $this->ancienneteActuellePO = $ancienneteActuellePO;
+        $this->ancienneteActuellePOEducatif = $ancienneteActuellePOEducatif;
+        $this->ancienneteActuellePOAuxiliaire = $ancienneteActuellePOAuxiliaire;
     }
 
     /**
@@ -73,8 +80,16 @@ class Evenement
     /**
      * @return int
      */
-    public function getAncienneteActuellePO(): int
+    public function getAncienneteActuellePOEducatif(): int
     {
-        return $this->ancienneteActuellePO;
+        return $this->ancienneteActuellePOEducatif;
+    }
+
+    /**
+     * @return int
+     */
+    public function getAncienneteActuellePOAuxiliaire(): int
+    {
+        return $this->ancienneteActuellePOAuxiliaire;
     }
 }

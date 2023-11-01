@@ -26,6 +26,7 @@
     "scripts": {
         "check-php": "phpcs -p src --standard=PHPCompatibility --runtime-set testVersion 7.4",
         "check-psr12": "phpcs --standard=PSR12 src",
+        "analyse": "phpstan analyse --level 7 src",
         "test": "phpunit --testdox --display-warnings  --display-errors  --display-incomplete  --colors=always",
         "post-install-cmd": "\"vendor/bin/phpcs\" --config-set installed_paths vendor/phpcompatibility/php-compatibility",
         "post-update-cmd" : "\"vendor/bin/phpcs\" --config-set installed_paths vendor/phpcompatibility/php-compatibility"
