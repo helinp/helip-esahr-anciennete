@@ -95,14 +95,17 @@ class AncienneteService implements AncienneteInterface
         }
 
         // gestion cas particulier PO: Année complète + une partie en .3 
+        $joursCorriges = 0;
         if (
-            $this->ancienneteTotal[$categorie]['PO_RAW'] + $this->ancienneteBrutePo[$categorie] >= 1200 
+            $this->ancienneteTotal[$categorie]['PO_RAW'] + $this->ancienneteBrutePo[$categorie] >= 1200
             &&
             ($this->ancienneteTotal[$categorie]['PO_RAW'] > 300 && $this->chargeDecimalTotal[$categorie]['PO_RAW'] > .5
-            ||
-            $this->ancienneteTotal[$categorie]['PO_RAW'] > 150 && $this->chargeDecimalTotal[$categorie]['PO_RAW'] <= .5)
+                ||
+                $this->ancienneteTotal[$categorie]['PO_RAW'] > 150 && $this->chargeDecimalTotal[$categorie]['PO_RAW'] <= .5)
         ) {
-            $this->correctionCalculPo($categorie);
+            if ($type === 'PO') {
+                return $this->applyCorrectionCalculPo($categorie);
+            }
         }
 
         // somme pour total
@@ -226,8 +229,6 @@ class AncienneteService implements AncienneteInterface
 
     private function calculAnciennetePo(string $categorie)
     {
-
-
         // Ancienneté PO Règle des 1200 jours
         $this->ancienneteTmp[$categorie]['PO'] =
             AncienneteCalculateurHelper::calculerJoursPo(
@@ -256,14 +257,20 @@ class AncienneteService implements AncienneteInterface
     }
 
     /**
-     * Calcule les jours PO pour une année complète
-     * avec une partie en .3
+     * Applique la correction du calcul de l'ancienneté PO
      * 
      * @param string $categorie
-     * @return float
+     * @return void
      */
-    private function correctionCalculPo(string $categorie)
+    private function applyCorrectionCalculPo(string $categorie): float
     {
-        throw new \Exception('Cas particulier (année complète avec réduction partielle x 0,3): en cours de développement.');
+        $corr = AncienneteCalculateurHelper::correctionCalculPo(
+            $this->ancienneteTotal[$categorie]['PO_RAW'],
+            $this->ancienneteBrutePo[$categorie],
+            $this->ancienneteTotal[$categorie]['PO'],
+            $this->chargeDecimalTotal[$categorie]['PO_RAW']
+        );
+
+        return $corr;
     }
 }
