@@ -39,7 +39,7 @@ class Evenement
             throw new InvalidArgumentException('La date de début doit être inférieure à la date de fin.');
         }
 
-        // check if attributions are valid
+        // contrôle de l'objet Attribution
         foreach ($attributions as $attribution) {
             if (!$attribution instanceof Attribution) {
                 throw new InvalidArgumentException('Les attributions doivent être des instances de la classe Attribution.');
