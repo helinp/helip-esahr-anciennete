@@ -570,6 +570,54 @@ d’ancienneté puisque le membre du personnel a déjà un mi-temps subventionn�
         $this->assertEquals(300, $anciennete->get(Attribution::CAT_PERSONNEL_EDUCATIF, 'PO_RAW'), 'Ancienneté PO Raw');
         $this->assertEquals(230, $anciennete->get(Attribution::CAT_PERSONNEL_EDUCATIF, 'PO'), 'Ancienneté PO Evenement A + B');
     }
+    // test anciennete 1200 se fait sur plusieurs événements
+    public function testPoPlus1200JoursQuartTempsSommeEvents()
+    {
+        /* Exemple d'un professeur de mandoline qui preste 13 périodes PO et a une ancienneté de 1100 jours PO */
+
+        // 110 jours calendriers
+        $attributionA = new Attribution(
+            fraction: 24,
+            periodes: 6,
+            situation: 'T',
+            fonction: 'Mandoline',
+            categorie: Attribution::CAT_PERSONNEL_EDUCATIF,
+            anneeScolaire: new AnneeScolaire('2021-2022'),
+            estSubventionne: true,
+            estPO: true,
+            estTitreRequis: true
+        );
+
+        $evenenementA = new Evenement(
+            dateDebut: new DateTime('2021-09-01'),
+            dateFin: new DateTime('2021-12-19'),
+            attributions: [$attributionA],
+            ancienneteActuellePOEducatif: 1100
+        );
+
+        /* 
+        110 jours calendrier deviennent 35 jours
+        -- 100 (1200 - 1100) * 0.3 * 0.5 => 15 jours 
+        -- 10 * 0.5 jours => 20 jours
+        */
+        $ancienneteService = new AncienneteServiceCalculateur();
+
+        // 193 jours calendriers
+        $evenenementB = new Evenement(
+            dateDebut: new DateTime('2021-12-20'),
+            dateFin: new DateTime('2022-06-30'),
+            attributions: [$attributionA],
+            ancienneteActuellePOEducatif: 1100
+        );
+
+        /* 
+        193 jours calendriers deviennent 96.5 jours
+        -- 193 * .5 => 96.5 jours
+        TOTAL: 230 x .5 = 115 jours
+        */
+        $anciennete = $ancienneteService->calculer([$evenenementA, $evenenementB]);
+        $this->assertEquals(115, $anciennete->get(Attribution::CAT_PERSONNEL_EDUCATIF, 'PO'), 'Ancienneté PO Evenement A + B');
+    }
 }
 
 
