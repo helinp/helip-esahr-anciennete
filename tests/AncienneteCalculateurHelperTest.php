@@ -38,4 +38,35 @@ class AncienneteCalculateurHelperTest extends TestCase
         $jours = EsahrAncienneteAncienneteCalculateurHelper::calculerJoursPo(300, 1300);
         $this->assertEquals(300, $jours);
     }
+
+    public function testCorrectionCalculPo() {
+
+        $dataTests = [
+            [
+            303, // ancienneteTotalPoRaw
+            1100,  // ancienneteBrutePo
+            233, // ancienneteTotalPo
+            .54, // chargeDecimalTotal
+            230 // resultat attendu
+            ],
+            [
+            303, // ancienneteTotalPoRaw
+            1100,  // ancienneteBrutePo
+            116.5, // ancienneteTotalPo
+            .25, // chargeDecimalTotal
+            115 // resultat attendu
+            ],
+        ];
+
+        foreach ($dataTests as $key => $dataTest) {
+            $jours = EsahrAncienneteAncienneteCalculateurHelper::correctionCalculPo(
+                ancienneteTotalPoRaw: $dataTest[0],
+                ancienneteBrutePo: $dataTest[1],
+                ancienneteTotalPo: $dataTest[2],
+                chargeDecimalTotal: $dataTest[3]
+            );
+
+            $this->assertEquals($dataTest[4], $jours, 'dataTest key n°'  .$key);
+        }
+    }
 }
