@@ -161,4 +161,33 @@ class AncienneteCalculateurHelper
         // En dessous de 1200 jours, on applique la règle des 30%
         return ($nbJoursAvant1200 * $coefficientReducteur) + $nbJoursApres1200;
     }
+
+    /**
+     * Calcule les jours PO pour une année complète
+     * avec une partie en .3
+     * 
+     * @caution: ATTENTION: * ne fonctionne pas si charge passe au dessus
+     * et au dessous de .5 durant l'année
+     * 
+     * @param float $ancienneteTotalPoRaw l'ancienneté calculée sans coéfficient (jours calendiers * 0.5|1.0)
+     * @param float $ancienneteBrutePo l'ancienneté de carrière PO brute (pour calcul 1200 jours)
+     * @param float $ancienneteTotalPo l'ancienneté à corriger calculée avec coéficient (jours calendriers * 0.5|1.0) 
+     * @param float $chargeDecimalTotal la dernière charge calculée *
+     * @return float
+     */
+    public static function correctionCalculPo(float $ancienneteTotalPoRaw, float $ancienneteBrutePo, float $ancienneteTotalPo, float $chargeDecimalTotal): float
+    {
+        $correction = max($ancienneteTotalPoRaw - 300, 0);
+        $difference1200Jours =  max(0, $ancienneteTotalPoRaw + $ancienneteBrutePo - 1200);
+
+        if ($correction > 0) {
+
+            $coefficientMiTemps = ($chargeDecimalTotal < .5 ? .5 : 1);
+            $coefficient1200Jours = ($difference1200Jours >= 0 ? 1 : .3);
+
+            $ancienneteTotalPo = $ancienneteTotalPo - ($correction  * $coefficient1200Jours * $coefficientMiTemps);
+        }
+
+        return $ancienneteTotalPo;
+    }
 }
