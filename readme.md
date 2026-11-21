@@ -82,7 +82,7 @@ $anciennete->get($categorie, 'PO');
 // Ancienneté CF du mdp auxiliaire
 $anciennete->get(Attribution::CAT_PERSONNEL_AUXILIAIRE, 'CF');
 
-// Fonctions et bilans annuels, avant troncature
+// Fonctions et bilans annuels tronqués
 $anciennete->getFonctions($categorie);
 $anciennete->getParAnnee($categorie);
 $anciennete->getParAnnee($categorie, 'Violoncelle');
@@ -129,7 +129,7 @@ Sans arguments, `getTableauCalcul()` renvoie les lignes de service de toutes les
 
 Chaque ligne contient l'année, les dates incluses, les jours calendrier, les charges CF/PO, les coefficients de charge (0, 0,5 ou 1), l'ancienneté PO brute avant la période, les jours de part et d'autre du seuil des 1 200 jours, les valeurs avant/après plafond et la part PO cumulable. `contribution_totale` est la somme non tronquée de `cf_retenu` et `po_cumulable`. Les exclusions indiquent la fonction et leur motif.
 
-Les valeurs des lignes et des bilans annuels conservent leurs décimales. Les getters finaux tronquent après cumul des années. Le tableau HTML affiche au plus six décimales ; son pied de tableau affiche les résultats finaux et la politique de troncature. Il ne faut donc pas additionner des valeurs déjà affichées/tronquées pour refaire le calcul.
+Les lignes de calcul conservent leurs décimales. Les bilans annuels sont tronqués en jours entiers ; les getters finaux additionnent ces résultats annuels déjà tronqués. Le tableau HTML affiche au plus six décimales ; son pied de tableau affiche les résultats finaux et la politique de troncature. Il ne faut donc pas additionner des valeurs déjà affichées/tronquées pour refaire le calcul.
 
 ## Troncature des décimales
 
@@ -143,7 +143,7 @@ $moteurGlobal = new AncienneteServiceCalculateur(
 );
 ```
 
-La troncature séparée porte sur le cumul de carrière de chaque financement, jamais sur chaque période. Le mode est consultable avec `getModeTroncature()`.
+La règle métier confirmée impose une troncature sur le résultat final de chaque année scolaire, après cumul de ses périodes. En mode séparé, CF et PO cumulable sont tronqués séparément dans chaque année ; en mode global, leur somme annuelle est tronquée. Aucun reliquat décimal ne passe à l’année suivante. Cette règle annuelle constitue l’arbitrage métier retenu pour ce projet, malgré la formulation multiannuelle des pages 15–16 et 20 du vadémécum. Le mode est consultable avec `getModeTroncature()`.
 
 ## Attributions et événements
 

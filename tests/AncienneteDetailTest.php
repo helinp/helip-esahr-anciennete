@@ -180,8 +180,8 @@ final class AncienneteDetailTest extends TestCase
         ]);
         self::assertSame(600, $resultat->getParFonction(self::CAT, 'Violon'));
         self::assertSame(600.0, array_sum(array_column($resultat->getTableauCalcul(self::CAT), 'cf_retenu')));
-        self::assertSame(300.0, $resultat->getParAnnee(self::CAT)['2020-2021']['TOTAL']);
-        self::assertSame(300.0, $resultat->getParAnnee(self::CAT, 'Violon')['2019-2020']['TOTAL']);
+        self::assertSame(300, $resultat->getParAnnee(self::CAT)['2020-2021']['TOTAL']);
+        self::assertSame(300, $resultat->getParAnnee(self::CAT, 'Violon')['2019-2020']['TOTAL']);
         // Un appelant peut modifier sa copie du tableau sans modifier le résultat.
         $copie = $resultat->getTableauCalcul(self::CAT);
         $copie[0]['cf_retenu'] = -100;
@@ -205,7 +205,7 @@ final class AncienneteDetailTest extends TestCase
         self::assertSame($attendu, $resultat->get(self::CAT));
         self::assertSame($attendu, $resultat->getParFonction(self::CAT, 'Violon'));
         self::assertEqualsWithDelta(249.45, array_sum(array_column($resultat->getTableauCalcul(self::CAT), 'contribution_totale')), 1e-9);
-        self::assertEqualsWithDelta(22.95, $resultat->getParAnnee(self::CAT)['2020-2021']['PO_SUM'], 1e-9);
+        self::assertSame(22, $resultat->getParAnnee(self::CAT)['2020-2021']['PO_SUM']);
     }
 
     public function testPlafondDuCumulApparaitDansLesLignes(): void
@@ -220,6 +220,42 @@ final class AncienneteDetailTest extends TestCase
         self::assertSame(300.0, $ligne['po_retenu']);
         self::assertSame(150.0, $ligne['po_cumulable']);
         self::assertSame(300.0, $ligne['contribution_totale']);
+    }
+
+    #[DataProvider('modesTroncature')]
+    public function testTroncatureAnnuelleAvantCumulServiceEtFonction(string $mode, int $ignore): void
+    {
+        $evenements = [];
+        foreach (['2019-2020', '2020-2021'] as $annee) {
+            $debut = substr($annee, 0, 4);
+            // Deux périodes distinctes de 1 et 2 jours, toutes deux sous mi-temps.
+            // CF : 0,5 + 1 = 1,5 par an ; PO cumulable : 0,15 + 0,3 = 0,45.
+            foreach ([['01', '01', 4], ['02', '03', 6]] as [$jour, $fin, $charge]) {
+                $evenements[] = $this->evenement("$debut-09-$jour", "$debut-09-$fin", [
+                    $this->attribution(['anneeScolaire' => new AnneeScolaire($annee), 'periodes' => $charge]),
+                    $this->attribution([
+                        'anneeScolaire' => new AnneeScolaire($annee), 'periodes' => 2,
+                        'estPO' => true, 'estSubventionne' => false,
+                    ]),
+                ]);
+            }
+        }
+        $resultat = (new AncienneteServiceCalculateur($mode))->calculer($evenements);
+        foreach ([null, 'Violon'] as $fonction) {
+            $annees = $resultat->getParAnnee(self::CAT, $fonction);
+            foreach ($annees as $bilan) {
+                self::assertSame(1, $bilan['CF']);
+                self::assertSame(0, $bilan['PO_SUM']);
+                self::assertSame(1, $bilan['TOTAL']);
+                foreach ($bilan as $jours) {
+                    self::assertIsInt($jours);
+                }
+            }
+        }
+        self::assertSame(2, $resultat->get(self::CAT));
+        self::assertSame(2, $resultat->getParFonction(self::CAT, 'Violon'));
+        self::assertSame(2, $resultat->get(self::CAT, 'CF'));
+        self::assertSame(0, $resultat->get(self::CAT, 'PO_SUM'));
     }
 
     public function testResultatVideEtReutilisationDuMoteur(): void

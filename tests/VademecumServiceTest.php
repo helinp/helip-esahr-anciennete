@@ -248,14 +248,14 @@ final class VademecumServiceTest extends TestCase
         self::assertEquals($attendu, $resultat->get(Attribution::CAT_PERSONNEL_EDUCATIF, 'PO'));
     }
 
-    public function testPage20TroncaturePoApresCumulDePlusieursAnnees(): void
+    public function testTroncaturePoParAnneeAvantCumul(): void
     {
         $resultat = (new AncienneteServiceCalculateur())->calculer([
             self::evenement('2019-09-01', '2019-09-03', [self::attribution(12, po: true, annee: '2019-2020')]),
             self::evenement('2020-09-01', '2020-09-03', [self::attribution(12, po: true)]),
         ]);
-        // 3 * 0,3 + 3 * 0,3 = 1,8 : une seule troncature, y compris pour TOTAL.
-        self::assertEquals(1, $resultat->get(Attribution::CAT_PERSONNEL_EDUCATIF, 'PO'));
-        self::assertEquals(1, $resultat->get(Attribution::CAT_PERSONNEL_EDUCATIF));
+        // Règle métier confirmée : chaque année donne 0,9, tronqué à 0 avant cumul.
+        self::assertEquals(0, $resultat->get(Attribution::CAT_PERSONNEL_EDUCATIF, 'PO'));
+        self::assertEquals(0, $resultat->get(Attribution::CAT_PERSONNEL_EDUCATIF));
     }
 }

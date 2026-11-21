@@ -22,19 +22,11 @@ final class BilanCalcul
         if (!in_array($type, ['CF', 'PO', 'PO_RAW', 'PO_SUM', 'TOTAL'], true)) {
             throw new InvalidArgumentException('Type d’ancienneté inconnu : ' . $type);
         }
-        $cf = $po = 0.0;
-        foreach ($this->annees as $annee) {
-            if ($type === 'TOTAL') {
-                $cf += $annee['CF'];
-                $po += $annee['PO_SUM'];
-            } else {
-                $cf += $annee[$type];
-            }
+        $jours = 0;
+        foreach ($this->getParAnnee() as $annee) {
+            $jours += $annee[$type];
         }
-        if ($type === 'TOTAL' && $this->troncature === AncienneteServiceCalculateur::TRONCATURE_PAR_FINANCEMENT) {
-            return self::tronquer($cf) + self::tronquer($po);
-        }
-        return self::tronquer($cf + $po);
+        return $jours;
     }
 
     private static function tronquer(float $jours): int
@@ -44,12 +36,20 @@ final class BilanCalcul
     }
 
     /**
-     * Valeurs annuelles avant troncature finale.
-     * @return array<string, array<string, float>>
+     * Résultats tronqués pour chaque année, avant cumul de carrière.
+     * @return array<string, array<string, int>>
      */
     public function getParAnnee(): array
     {
-        return $this->annees;
+        $resultat = [];
+        foreach ($this->annees as $annee => $valeurs) {
+            $annuel = array_map(self::tronquer(...), $valeurs);
+            $annuel['TOTAL'] = $this->troncature === AncienneteServiceCalculateur::TRONCATURE_PAR_FINANCEMENT
+                ? $annuel['CF'] + $annuel['PO_SUM']
+                : self::tronquer($valeurs['CF'] + $valeurs['PO_SUM']);
+            $resultat[$annee] = $annuel;
+        }
+        return $resultat;
     }
 
     /** @return list<array<string, mixed>> */

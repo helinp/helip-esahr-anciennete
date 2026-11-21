@@ -11,7 +11,7 @@ interface AncienneteInterface
     /** @return list<string> */
     public function getFonctions(string $categorie): array;
 
-    /** @return array<string, array<string, float>> */
+    /** @return array<string, array<string, int>> */
     public function getParAnnee(string $categorie, ?string $fonction = null): array;
 
     public function getModeTroncature(): string;

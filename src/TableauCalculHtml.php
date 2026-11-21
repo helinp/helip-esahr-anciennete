@@ -51,7 +51,7 @@ final class TableauCalculHtml
         $mode = $resultat->getModeTroncature() === AncienneteServiceCalculateur::TRONCATURE_GLOBALE
             ? 'globale' : 'séparée par financement CF et PO cumulable';
         $html .= '<tr><td colspan="16">Charges exprimées en fractions de temps plein (0,5 = mi-temps). '
-            . 'Les étapes conservent les décimales ; troncature finale ' . $mode . '. '
+            . 'Les étapes conservent les décimales ; troncature finale ' . $mode . ' pour chaque année scolaire, avant cumul des années. '
             . 'Les valeurs affichées sont limitées à six décimales. '
             . 'Les plafonds sont appliqués par année, dans l’ordre chronologique ; '
             . 'les 1 200 premiers jours PO bruts de la catégorie sont valorisés à 0,3. '

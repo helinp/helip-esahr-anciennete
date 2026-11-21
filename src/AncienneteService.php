@@ -44,7 +44,7 @@ final class AncienneteService implements AncienneteInterface
         return array_map('strval', array_keys($this->fonctions[$categorie] ?? []));
     }
 
-    /** @return array<string, array<string, float>> */
+    /** @return array<string, array<string, int>> */
     public function getParAnnee(string $categorie, ?string $fonction = null): array
     {
         $this->validerCategorie($categorie);
