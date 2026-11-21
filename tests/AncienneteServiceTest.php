@@ -258,6 +258,7 @@ class AncienneteServiceTest extends TestCase
 
         $this->assertEquals(150, $anciennete->get(Attribution::CAT_PERSONNEL_EDUCATIF, 'CF'), 'Ancienneté de la catégorie CF');
         $this->assertEquals(90, $anciennete->get(Attribution::CAT_PERSONNEL_EDUCATIF, 'PO'), 'Ancienneté de la catégorie PO');
+        $this->assertEquals(240, $anciennete->get(Attribution::CAT_PERSONNEL_EDUCATIF), 'Total du premier exemple de la page 19');
     }
 
     /**

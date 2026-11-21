@@ -4,9 +4,31 @@ namespace Tests\Helpers;
 
 use Helip\EsahrAnciennete\AncienneteCalculateurHelper as EsahrAncienneteAncienneteCalculateurHelper;
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class AncienneteCalculateurHelperTest extends TestCase
 {
+    public static function seuilPoVademecum(): iterable
+    {
+        // Vadémécum p17 : réduction sur les 1200 premiers jours,
+        // puis un jour vaut un jour dès le 1201e.
+        yield '1200 premiers jours' => [1200, 0, 360.0];
+        yield '1201 premiers jours' => [1201, 0, 361.0];
+        yield 'dernier jour reduit' => [1, 1199, 0.3];
+        yield 'franchissement exact' => [2, 1199, 1.3];
+        yield 'premier jour non reduit' => [1, 1200, 1.0];
+    }
+
+    #[DataProvider('seuilPoVademecum')]
+    public function testSeuilPoVademecum(float $jours, float $initial, float $attendu): void
+    {
+        self::assertEqualsWithDelta(
+            $attendu,
+            EsahrAncienneteAncienneteCalculateurHelper::calculerJoursPo($jours, $initial),
+            0.000001
+        );
+    }
+
     /**
      * 
      * @return void
@@ -42,6 +64,8 @@ class AncienneteCalculateurHelperTest extends TestCase
     public function testCorrectionCalculPo() {
 
         $dataTests = [
+            [303, 0, 90.9, .5, 90],
+            [303, 0, 45.45, .25, 45],
             [
             303, // ancienneteTotalPoRaw
             1100,  // ancienneteBrutePo

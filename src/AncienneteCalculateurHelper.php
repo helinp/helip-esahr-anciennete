@@ -8,7 +8,7 @@ class AncienneteCalculateurHelper
 {
     /**
      * Retourne le nombre de jours calendrier entre deux dates
-     * 
+     *
      * @param DateTime $dateDebut
      * @param DateTime $dateFin
      * @return int
@@ -21,7 +21,7 @@ class AncienneteCalculateurHelper
 
     /**
      * Trie un tableau d'événements par date de début
-     * 
+     *
      * @param Evenement[] $evenements
      * @return Evenement[]
      */
@@ -36,7 +36,7 @@ class AncienneteCalculateurHelper
 
     /**
      * Tronque les décimales d'un nombre
-     * 
+     *
      * @param float $nombre
      * @return int
      */
@@ -47,7 +47,7 @@ class AncienneteCalculateurHelper
 
     /**
      * Retourne un array d'attributions groupées par fonction
-     * 
+     *
      * @param Attribution[] $attributions
      * @return Attribution[]
      */
@@ -58,7 +58,7 @@ class AncienneteCalculateurHelper
 
     /**
      * Retourne un array d'attributions groupées par catégorie
-     * 
+     *
      * @param Attribution[] $attributions
      * @return Attribution[]
      */
@@ -69,10 +69,10 @@ class AncienneteCalculateurHelper
 
     /**
      * Retourne un array d'attributions groupées par propriété
-     * 
+     *
      * @param mixed[] $attributions
      * @param Attribution[] $attributions
-     * 
+     *
      * @return mixed[]
      */
     private static function groupeParPropriete(array $attributions, string $propriete): array
@@ -80,16 +80,16 @@ class AncienneteCalculateurHelper
         $groupes = [];
 
         foreach ($attributions as $item) {
-
             $key = $item->$propriete() . (string) $item->getEstPo();
             if (!array_key_exists($key, $groupes)) {
-                $groupes[$key] = $item;
+                $groupes[$key] = clone $item;
             } else {
                 $itemExistante = $groupes[$key];
+                $charge = $itemExistante->getChargeDecimal() + $item->getChargeDecimal();
                 $itemExistante->setPeriodes($itemExistante->getPeriodes() + $item->getPeriodes());
-                $itemExistante->setChargeDecimal($itemExistante->getChargeDecimal() + $item->getChargeDecimal());
+                $itemExistante->setChargeDecimal($charge);
 
-                $groupes[$item->$propriete()] = $itemExistante;
+                $groupes[$key] = $itemExistante;
             }
         }
         return $groupes;
@@ -98,7 +98,7 @@ class AncienneteCalculateurHelper
     /**
      * Applique les limites d'ancienneté
      * Tronque les décimales et limite à 300 jours par année scolaire
-     * 
+     *
      * @param int $anciennete
      * @param float $chargeDecimal
      * @return int
@@ -116,7 +116,7 @@ class AncienneteCalculateurHelper
     /**
      * Trie un tableau d'attributions par PO
      * CF en premier, puis PO, pour calcul CF > .5
-     * 
+     *
      * @param Attribution[] $attributions
      * @return Attribution[]
      */
@@ -139,12 +139,12 @@ class AncienneteCalculateurHelper
      */
     public static function calculerJoursPo(float $jours, float $anciennetePo): float
     {
-        // négatif 
-        if($anciennetePo < 0 || $jours < 0) {
+        // négatif
+        if ($anciennetePo < 0 || $jours < 0) {
             throw new \InvalidArgumentException('L\'ancienneté PO ne peut pas être négative.');
         }
 
-        if($jours == 0) {
+        if ($jours == 0) {
             return 0;
         }
 
@@ -154,7 +154,7 @@ class AncienneteCalculateurHelper
         if ($anciennetePo >= $seuilJours) {
             return $jours;
         }
-        
+
         $nbJoursAvant1200 = min($seuilJours - $anciennetePo, $jours);
         $nbJoursApres1200 = max($jours - $nbJoursAvant1200, 0);
 
@@ -165,29 +165,28 @@ class AncienneteCalculateurHelper
     /**
      * Calcule les jours PO pour une année complète
      * avec une partie en .3
-     * 
+     *
      * @caution: ATTENTION: * ne fonctionne pas si charge passe au dessus
      * et au dessous de .5 durant l'année
-     * 
+     *
      * @param float $ancienneteTotalPoRaw l'ancienneté calculée sans coéfficient (jours calendiers * 0.5|1.0)
      * @param float $ancienneteBrutePo l'ancienneté de carrière PO brute (pour calcul 1200 jours)
-     * @param float $ancienneteTotalPo l'ancienneté à corriger calculée avec coéficient (jours calendriers * 0.5|1.0) 
+     * @param float $ancienneteTotalPo l'ancienneté à corriger calculée avec coéficient (jours calendriers * 0.5|1.0)
      * @param float $chargeDecimalTotal la dernière charge calculée *
      * @return float
+     * @deprecated Utiliser AncienneteServiceCalculateur pour les historiques et charges variables.
      */
-    public static function correctionCalculPo(float $ancienneteTotalPoRaw, float $ancienneteBrutePo, float $ancienneteTotalPo, float $chargeDecimalTotal): float
-    {
-        $correction = max($ancienneteTotalPoRaw - 300, 0);
-        $difference1200Jours =  max(0, $ancienneteTotalPoRaw + $ancienneteBrutePo - 1200);
-
-        if ($correction > 0) {
-
-            $coefficientMiTemps = ($chargeDecimalTotal < .5 ? .5 : 1);
-            $coefficient1200Jours = ($difference1200Jours >= 0 ? 1 : .3);
-
-            $ancienneteTotalPo = $ancienneteTotalPo - ($correction  * $coefficient1200Jours * $coefficientMiTemps);
+    public static function correctionCalculPo(
+        float $ancienneteTotalPoRaw,
+        float $ancienneteBrutePo,
+        float $ancienneteTotalPo,
+        float $chargeDecimalTotal
+    ): float {
+        if ($ancienneteTotalPoRaw <= 300) {
+            return $ancienneteTotalPo;
         }
-
-        return $ancienneteTotalPo;
+        // Ancienne API limitée à une charge constante : recalculer les 300 jours
+        // retenus au lieu de soustraire systématiquement des jours au coefficient 1.
+        return self::calculerJoursPo(300, $ancienneteBrutePo) * ($chargeDecimalTotal < .5 ? .5 : 1);
     }
 }

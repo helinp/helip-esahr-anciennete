@@ -23,6 +23,11 @@ class Attribution
     private bool $estSubventionne;
     private bool $estTitreRequis;
     private bool $estPO;
+    private bool $estFonctionPrincipale;
+    private bool $estTitreSuffisant;
+    private bool $estFonctionReglementaire;
+    private bool $estEncadrementPedagogique;
+    private bool $estAssimileSubventionne;
 
     /**
      * @param int $fraction La fraction de l'attribution
@@ -44,19 +49,30 @@ class Attribution
         AnneeScolaire $anneeScolaire,
         bool $estSubventionne,
         bool $estPO,
-        bool $estTitreRequis
+        bool $estTitreRequis,
+        bool $estFonctionPrincipale = true,
+        bool $estTitreSuffisant = true,
+        bool $estFonctionReglementaire = true,
+        bool $estEncadrementPedagogique = false,
+        bool $estAssimileSubventionne = false
     ) {
         // Contrôles
-        if ($periodes > $fraction) {
-            throw new InvalidArgumentException('Le nombre de périodes doit être inférieur ou égal au nombre de fractions.');
+        if ($fraction <= 0 || $periodes < 0 || $periodes > $fraction) {
+            throw new InvalidArgumentException(
+                'La fraction doit être positive et les périodes comprises entre zéro et cette fraction.'
+            );
         }
 
         if (!in_array($situation, self::SITUATIONS_VALIDES)) {
-            throw new InvalidArgumentException('La situation doit être une des valeurs suivantes: ' . implode(', ', self::SITUATIONS_VALIDES));
+            throw new InvalidArgumentException(
+                'La situation doit être une des valeurs suivantes: ' . implode(', ', self::SITUATIONS_VALIDES)
+            );
         }
 
-        if(!in_array($categorie, self::CATEGORIES_VALIDES)) {
-            throw new InvalidArgumentException('La catégorie doit être une des valeurs suivantes: ' . implode(', ', self::CATEGORIES_VALIDES));
+        if (!in_array($categorie, self::CATEGORIES_VALIDES)) {
+            throw new InvalidArgumentException(
+                'La catégorie doit être une des valeurs suivantes: ' . implode(', ', self::CATEGORIES_VALIDES)
+            );
         }
 
         $this->fraction = $fraction;
@@ -68,6 +84,11 @@ class Attribution
         $this->estSubventionne = $estSubventionne;
         $this->estPO = $estPO;
         $this->estTitreRequis = $estTitreRequis;
+        $this->estFonctionPrincipale = $estFonctionPrincipale;
+        $this->estTitreSuffisant = $estTitreSuffisant;
+        $this->estFonctionReglementaire = $estFonctionReglementaire;
+        $this->estEncadrementPedagogique = $estEncadrementPedagogique;
+        $this->estAssimileSubventionne = $estAssimileSubventionne;
 
         $this->chargeDecimal = $this->calculerChargeDecimal();
     }
@@ -75,7 +96,7 @@ class Attribution
     /**
      * La fraction de l'attribution
      * Ex: 24, 36
-     * 
+     *
      * @return int
      */
     public function getFraction(): int
@@ -86,7 +107,7 @@ class Attribution
     /**
      * Le nombre de périodes de l'attribution
      * Ex: 1, 2, 3
-     * 
+     *
      * @return int
      */
     public function getPeriodes(): int
@@ -96,13 +117,17 @@ class Attribution
 
     public function setPeriodes(int $periodes): void
     {
+        if ($periodes < 0) {
+            throw new InvalidArgumentException('Le nombre de périodes ne peut pas être négatif.');
+        }
         $this->periodes = $periodes;
+        $this->chargeDecimal = $this->calculerChargeDecimal();
     }
 
     /**
      * La situation de l'attribution
      * Valeurs: self::SITUATIONS_VALIDES
-     * 
+     *
      * @return string
      */
     public function getSituation(): string
@@ -112,7 +137,7 @@ class Attribution
 
     /**
      * La fonction de l'attribution
-     * 
+     *
      * @return string
      */
     public function getFonction(): string
@@ -123,7 +148,7 @@ class Attribution
     /**
      * La catégorie de l'attribution
      * Valeurs: self::CATEGORIES_VALIDES
-     * 
+     *
      * @return string
      */
     public function getCategorie(): string
@@ -133,7 +158,7 @@ class Attribution
 
     /**
      * L'année scolaire de l'attribution
-     * 
+     *
      * @return AnneeScolaire
      */
     public function getAnneeScolaire(): AnneeScolaire
@@ -143,7 +168,7 @@ class Attribution
 
     /**
      * Si l'attribution est subventionnée par la CF
-     * 
+     *
      * @return bool
      */
     public function getEstSubventionne(): bool
@@ -153,7 +178,7 @@ class Attribution
 
     /**
      * Si l'attribution est prise en charge par le PO
-     * 
+     *
      * @return bool
      */
     public function getEstPO(): bool
@@ -163,7 +188,7 @@ class Attribution
 
     /**
      * Si l'attribution est prestée en tant que titre requis
-     * 
+     *
      * @return bool
      */
     public function getEstTitreRequis(): bool
@@ -173,12 +198,39 @@ class Attribution
 
     public function setChargeDecimal(float $chargeDecimal): void
     {
+        if (!is_finite($chargeDecimal) || $chargeDecimal < 0) {
+            throw new InvalidArgumentException('La charge doit être un nombre positif fini.');
+        }
         $this->chargeDecimal = $chargeDecimal;
+    }
+
+    /** null signifie admissible. La qualification des congés reste à charge de l'appelant. */
+    public function getMotifExclusion(bool $pourFonction = false): ?string
+    {
+        if ($this->periodes === 0) {
+            return 'aucune prestation';
+        }
+        if (!$this->estFonctionPrincipale) {
+            return 'fonction accessoire';
+        }
+        if (!$this->estFonctionReglementaire) {
+            return 'fonction non réglementaire';
+        }
+        if (!$this->estTitreRequis && ($this->estPO || !$this->estTitreSuffisant)) {
+            return $this->estPO ? 'titre requis obligatoire pour les services PO' : 'absence de titre de capacité';
+        }
+        if (!$this->estPO && !$this->estSubventionne && !$this->estAssimileSubventionne) {
+            return 'service non subventionné et non assimilé';
+        }
+        if ($pourFonction && $this->estEncadrementPedagogique) {
+            return 'encadrement pédagogique : ancienneté de service uniquement';
+        }
+        return null;
     }
 
     /**
      * La charge de l'attribution en décimal
-     * 
+     *
      * @return float
      */
     public function getChargeDecimal(): float
@@ -189,12 +241,11 @@ class Attribution
 
     /**
      * La charge de l'attribution en décimal
-     * 
+     *
      * @return float
      */
     private function calculerChargeDecimal(): float
     {
         return $this->periodes / $this->fraction;
     }
-    
 }

@@ -6,7 +6,7 @@ interface AncienneteCalculateurInterface
 {
     /**
      * Calcule l'ancienneté d'un enseignant
-     * 
+     *
      * @param Evenement[] $evenements
      * @return AncienneteInterface
      */

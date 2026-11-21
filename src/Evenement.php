@@ -25,7 +25,8 @@ class Evenement
     /**
      * @param DateTime $dateDebut Représente la date de début de l'événement
      * @param DateTime $dateFin Représente la date de fin de l'événement
-     * @param int $ancienneteActuellePO Ancienneté PO actuelle, essentiel pour les 1200 jours PO
+     * @param int $ancienneteActuellePOEducatif Jours PO bruts avant tout l'historique transmis
+     * @param int $ancienneteActuellePOAuxiliaire Jours PO bruts avant tout l'historique transmis
      * @param Attribution[] $attributions
      */
     public function __construct(
@@ -35,19 +36,25 @@ class Evenement
         int $ancienneteActuellePOEducatif = 0,
         int $ancienneteActuellePOAuxiliaire = 0
     ) {
-        if ($dateDebut > $dateFin && $dateFin !== null) {
+        if ($dateDebut->format('Y-m-d') > $dateFin->format('Y-m-d')) {
             throw new InvalidArgumentException('La date de début doit être inférieure à la date de fin.');
+        }
+
+        if ($ancienneteActuellePOEducatif < 0 || $ancienneteActuellePOAuxiliaire < 0) {
+            throw new InvalidArgumentException('L’ancienneté PO initiale ne peut pas être négative.');
         }
 
         // contrôle de l'objet Attribution
         foreach ($attributions as $attribution) {
             if (!$attribution instanceof Attribution) {
-                throw new InvalidArgumentException('Les attributions doivent être des instances de la classe Attribution.');
+                throw new InvalidArgumentException(
+                    'Les attributions doivent être des instances de la classe Attribution.'
+                );
             }
         }
 
-        $this->dateDebut = $dateDebut;
-        $this->dateFin = $dateFin;
+        $this->dateDebut = (clone $dateDebut)->setTime(0, 0);
+        $this->dateFin = (clone $dateFin)->setTime(0, 0);
         $this->attributions = $attributions;
         $this->ancienneteActuellePOEducatif = $ancienneteActuellePOEducatif;
         $this->ancienneteActuellePOAuxiliaire = $ancienneteActuellePOAuxiliaire;
@@ -58,7 +65,7 @@ class Evenement
      */
     public function getDateDebut(): DateTime
     {
-        return $this->dateDebut;
+        return clone $this->dateDebut;
     }
 
     /**
@@ -66,7 +73,7 @@ class Evenement
      */
     public function getDateFin(): DateTime
     {
-        return $this->dateFin;
+        return clone $this->dateFin;
     }
 
     /**
