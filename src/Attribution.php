@@ -229,6 +229,32 @@ class Attribution
     }
 
     /**
+     * Empreinte des valeurs qui influencent le calcul (et l'affichage du détail).
+     * Deux attributions de même signature sont interchangeables : des périodes
+     * consécutives portant les mêmes signatures peuvent être regroupées.
+     */
+    public function getSignature(): string
+    {
+        return implode('|', [
+            $this->categorie,
+            $this->fonction,
+            $this->anneeScolaire->getAnneeScolaire(),
+            $this->situation,
+            $this->fraction,
+            $this->periodes,
+            sprintf('%.12F', $this->chargeDecimal),
+            (int) $this->estSubventionne,
+            (int) $this->estPO,
+            (int) $this->estTitreRequis,
+            (int) $this->estFonctionPrincipale,
+            (int) $this->estTitreSuffisant,
+            (int) $this->estFonctionReglementaire,
+            (int) $this->estEncadrementPedagogique,
+            (int) $this->estAssimileSubventionne,
+        ]);
+    }
+
+    /**
      * La charge de l'attribution en décimal
      *
      * @return float

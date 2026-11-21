@@ -147,7 +147,7 @@ La troncature séparée porte sur le cumul de carrière de chaque financement, j
 
 ## Attributions et événements
 
-Les événements peuvent être désordonnés, se chevaucher et couvrir plusieurs années scolaires au sein d'un même appel. Chaque attribution déclare son année scolaire ESAHR ; les dates de son événement doivent appartenir à cette année (septembre à août). Un événement traversant deux années doit être scindé en deux, avec les attributions correspondantes. Le calendrier de l'enseignement obligatoire de la dépendance `AnneeScolaire` n'est pas utilisé pour couper les désignations ESAHR.
+Les événements peuvent être désordonnés, se chevaucher et couvrir plusieurs années scolaires au sein d'un même appel. Chaque attribution déclare son année scolaire ESAHR. Pour les établissements à 37 semaines, le rattachement des événements utilise, depuis la rentrée 2022, la date de rentrée fournie par `helip/annee-scolaire`, jusqu’à la veille de la rentrée suivante (été inclus). Avant 2022, le début de rattachement reste le 1er septembre. Un événement traversant deux années doit être scindé en deux, avec les attributions correspondantes. La fin des cours (`getDateFin()`) n’est pas une borne de rejet des services estivaux ; leur admissibilité reste à vérifier en amont. Les calendriers particuliers à 29 ou 33 semaines ne sont pas gérés. Référence : [décret du 31 mars 2022](https://www.gallilex.cfwb.be/document/pdf/50303_000.pdf), applicable aussi à l’ESAHR.
 
 L'appelant fournit les dates de désignation et les interruptions réelles. Le moteur n'invente pas de désignation pendant les vacances et ne décide pas qu'un congé est admissible. Il ne filtre pas automatiquement une carrière à une date d'évaluation : fournir uniquement les services à prendre en compte.
 
@@ -173,7 +173,7 @@ Le moteur fait ensuite progresser le compteur automatiquement, avec au plus 300 
 
 ## Organisation du calcul
 
-1. `NormalisateurPeriodes` découpe les événements aux changements d'attributions. Les charges simultanées sont regroupées, sans compter deux fois les jours. Une même instance d'attribution répétée sur des événements qui se chevauchent n'est ajoutée qu'une fois ; des instances distinctes représentent des attributions distinctes.
+1. `NormalisateurPeriodes` découpe les événements aux changements d'attributions. Les charges simultanées sont regroupées, sans compter deux fois les jours. Une même instance d'attribution répétée sur des événements qui se chevauchent n'est ajoutée qu'une fois ; des instances distinctes représentent des attributions distinctes. Les périodes contiguës d'une même année dont les attributions ont les mêmes valeurs (`Attribution::getSignature()`) sont ensuite regroupées : une désignation reconduite par plusieurs événements successifs donne une seule ligne dans le tableau, sans changer les résultats.
 2. `AncienneteServiceCalculateur` applique l'admissibilité, puis le même moteur au service et à chaque fonction. Les catégories restent séparées.
 3. Les plafonds annuels sont consommés dans l'ordre chronologique. Le plafond CF est de 150 jours si toutes les prestations CF de l'année sont inférieures au mi-temps, sinon 300. Le compteur brut PO est limité à 300 jours avant application des coefficients. Le total annuel est limité à 300 en réduisant uniquement la part PO additionnable.
 4. `BilanCalcul` et `LigneCalcul` conservent les valeurs et les étapes. `AncienneteService` expose un résultat immuable, et `TableauCalculHtml` assure seulement sa présentation.
@@ -197,7 +197,7 @@ composer check-psr12
 
 En environnement restreint empêchant PHPStan d'ouvrir un port local, utiliser `vendor/bin/phpstan analyse --level 7 --no-progress --debug src`.
 
-Les tests couvrent les exemples du vadémécum, les bornes du seuil PO, le cumul CF/PO, les années et catégories distinctes, les chevauchements, les fonctions, les exclusions, la réconciliation des lignes avec les bilans, les deux politiques de troncature et le rendu HTML.
+Les tests couvrent les exemples du vadémécum, les bornes du seuil PO, le cumul CF/PO, les années et catégories distinctes, les chevauchements, le regroupement des attributions qui se suivent, les fonctions, les exclusions, la réconciliation des lignes avec les bilans, les deux politiques de troncature et le rendu HTML.
 
 ## TODO
 

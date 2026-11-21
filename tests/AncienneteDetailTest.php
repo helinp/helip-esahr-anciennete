@@ -249,6 +249,35 @@ final class AncienneteDetailTest extends TestCase
         ]);
     }
 
+    public static function bornesRentree(): iterable
+    {
+        yield 'rentrée 2022 en août' => ['2022-2023', '2022-08-29', true];
+        yield 'veille rentrée 2022 année précédente' => ['2021-2022', '2022-08-28', true];
+        yield 'rentrée 2022 exclue année précédente' => ['2021-2022', '2022-08-29', false];
+        yield 'veille rentrée exclue nouvelle année' => ['2022-2023', '2022-08-28', false];
+        yield 'fin des cours en juillet' => ['2022-2023', '2023-07-07', true];
+        yield 'été rattaché année précédente' => ['2022-2023', '2023-08-27', true];
+        yield 'rentrée suivante exclue' => ['2022-2023', '2023-08-28', false];
+        yield 'exception avant-dernier lundi' => ['2026-2027', '2026-08-24', true];
+        yield 'avant rentrée exceptionnelle' => ['2026-2027', '2026-08-23', false];
+        yield 'ancien premier septembre dimanche conservé' => ['2019-2020', '2019-09-01', true];
+    }
+
+    #[DataProvider('bornesRentree')]
+    public function testRattachementSelonRentree(string $annee, string $date, bool $valide): void
+    {
+        if (!$valide) {
+            $this->expectException(InvalidArgumentException::class);
+        }
+        $resultat = (new AncienneteServiceCalculateur())->calculer([
+            $this->evenement($date, $date, [$this->attribution([
+                'anneeScolaire' => new AnneeScolaire($annee),
+            ])]),
+        ]);
+        self::assertSame(1, $resultat->get(self::CAT));
+        self::assertArrayHasKey($annee, $resultat->getParAnnee(self::CAT));
+    }
+
     public function testDatesEntreesEtResultatSontProtegesDesMutations(): void
     {
         $date = new DateTime('2020-09-01 12:00:00');
